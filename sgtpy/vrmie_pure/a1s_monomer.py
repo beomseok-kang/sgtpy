@@ -1,5 +1,6 @@
 from __future__ import division, print_function, absolute_import
 import numpy as np
+import torch
 from .monomer_aux import eta_eff, deta_eff,  d2eta_eff,  d3eta_eff
 
 
@@ -27,7 +28,7 @@ def da1s(eta, lam, cctes, eps):
     ter2a1 = 6*eps/((lam-3)*(1-neff)**4)
     da1 = ter1a1 * ter2a1
 
-    return np.hstack([a1, da1])
+    return torch.hstack([a1, da1])
 
 
 def d2a1s(eta, lam, cctes, eps):
@@ -48,7 +49,7 @@ def d2a1s(eta, lam, cctes, eps):
     ter1a2 += eta*(-1 + neff)*(-5+2*neff)*d2neff
     ter2a2 = 6*eps/((lam-3)*(-1+neff)**5)
     d2a1 = ter1a2 * ter2a2
-    return np.hstack([a1, da1, d2a1])
+    return torch.hstack([a1, da1, d2a1])
 
 
 def d3a1s(eta, lam, cctes, eps):
@@ -78,4 +79,4 @@ def d3a1s(eta, lam, cctes, eps):
     ter1a3 += (-1 + neff)**2 * (-5 + 2 * neff) * (3*d2neff + eta * d3neff)
     ter2a3 = 6*eps/((lam-3)*(-1+neff)**6)
     d3a1 = ter1a3 * ter2a3
-    return np.hstack([a1, da1, d2a1, d3a1])
+    return torch.hstack([a1, da1, d2a1, d3a1])

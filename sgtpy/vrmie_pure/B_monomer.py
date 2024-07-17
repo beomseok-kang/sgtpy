@@ -1,7 +1,7 @@
 from __future__ import division, print_function, absolute_import
 import numpy as np
 # from .monomer_aux import I_lam, J_lam
-
+import torch
 
 def B(eta, Ilam, Jlam, eps):
     # B calculation Eq 33
@@ -43,7 +43,7 @@ def d2B(eta, Ilam, Jlam, eps):
     # second derivative
     d2b = Ilam*(-5. + (eta-2)*eta) + Jlam*9.*(1 + eta*(7. + 4.*eta))
     d2b *= 12.*eps/(eta-1)**5
-    return np.hstack([b, db, d2b])
+    return torch.hstack([b, db, d2b])
 
 
 def d3B(eta, Ilam, Jlam, eps):
@@ -64,4 +64,4 @@ def d3B(eta, Ilam, Jlam, eps):
 
     d3b = Ilam*(9. - (eta-2.)*eta) - Jlam*36.*(1. + eta*(3. + eta))
     d3b *= (36.*eps/(1.-eta)**6.)
-    return np.hstack([b, db, d2b, d3b])
+    return torch.hstack([b, db, d2b, d3b])

@@ -2,7 +2,7 @@ from __future__ import division, print_function, absolute_import
 import numpy as np
 from ..constants import Na
 from scipy.optimize import minimize_scalar, brentq
-
+import torch
 
 def dPsaft_fun(rho, temp_aux, saft):
     rhomolecular = Na * rho
@@ -40,7 +40,7 @@ def density_newton_lim(rho_a, rho_b, temp_aux, P, Xass0, saft):
             rho = rho_new
         else:
             rho = (rho_a + rho_b) / 2
-        if np.abs(rho - rho_old) < 1e-5:
+        if torch.abs(rho - rho_old) < 1e-5:
             break
         Psaft, dPsaft, Xass = saft.dP_drho_aux(rho, temp_aux, Xass)
     return rho, Xass
@@ -58,7 +58,7 @@ def density_topliss(state, temp_aux, P, Xass0, saft):
 
     # upper boundary limit at infinity pressure
     etamax = 0.7405
-    rho_lim = (6 * etamax) / (saft.ms * np.pi * saft.sigma**3) / Na
+    rho_lim = (6 * etamax) / (saft.ms * torch.pi * saft.sigma**3) / Na
     ub_sucess = False
     rho_ub = 0.4 * rho_lim
     it = 0
@@ -112,7 +112,7 @@ def density_topliss(state, temp_aux, P, Xass0, saft):
             flag = -1
 
     if flag == -1:
-        rho = np.nan
+        rho = torch.nan
     else:
         rho, Xass = density_newton_lim(bracket[0], bracket[1], temp_aux,
                                        P, Xass, saft)
@@ -129,7 +129,7 @@ def density_newton(rho0, temp_aux, P, Xass0, saft):
         dFO = dPsaft
         drho = FO/dFO
         rho -= drho
-        if np.abs(drho) < 1e-5:
+        if torch.abs(drho) < 1e-5:
             break
         Psaft, dPsaft, Xass = saft.dP_drho_aux(rho, temp_aux, Xass)
     return rho, Xass

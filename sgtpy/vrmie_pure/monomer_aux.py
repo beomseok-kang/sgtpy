@@ -1,6 +1,6 @@
 from __future__ import division, print_function, absolute_import
 import numpy as np
-
+import torch
 
 # Equation 28
 def I_lam(x0, lam):
@@ -67,37 +67,37 @@ def d3kHS(eta):
 
 
 def eta_eff(eta, ci):
-    eta_vec = np.array([eta, eta**2, eta**3, eta**4])
-    neff = np.dot(ci, eta_vec)
+    eta_vec = torch.tensor([eta, eta**2, eta**3, eta**4])
+    neff = torch.dot(ci, eta_vec)
     return neff
 
 
 def deta_eff(eta, ci):
 
-    eta_vec = np.array([[eta, eta**2, eta**3, eta**4],
+    eta_vec = torch.tensor([[eta, eta**2, eta**3, eta**4],
                        [1., 2*eta, 3*eta**2, 4*eta**3]])
 
-    dneff = np.matmul(eta_vec, ci)
+    dneff = torch.matmul(eta_vec, ci)
     return dneff
 
 
 def d2eta_eff(eta, ci):
 
-    eta_vec = np.array([[eta, eta**2, eta**3, eta**4],
+    eta_vec = torch.tensor([[eta, eta**2, eta**3, eta**4],
                        [1., 2*eta, 3*eta**2, 4*eta**3],
                        [0., 2., 6.*eta, 12.*eta**2]])
-    d2neff = np.matmul(eta_vec, ci)
+    d2neff = torch.matmul(eta_vec, ci)
 
     return d2neff
 
 
 def d3eta_eff(eta, ci):
-    eta_vec = np.array([[eta, eta**2, eta**3, eta**4],
+    eta_vec = torch.tensor([[eta, eta**2, eta**3, eta**4],
                        [1., 2*eta, 3*eta**2, 4*eta**3],
                        [0., 2., 6.*eta, 12.*eta**2],
                        [0., 0., 6., 24.*eta]])
 
-    d3neff = np.matmul(eta_vec, ci)
+    d3neff = torch.matmul(eta_vec, ci)
 
     return d3neff
 

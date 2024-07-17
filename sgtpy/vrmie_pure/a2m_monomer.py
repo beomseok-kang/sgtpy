@@ -1,5 +1,6 @@
 from __future__ import division, print_function, absolute_import
 import numpy as np
+import torch
 
 
 # Second pertubation Eq 36
@@ -21,7 +22,7 @@ def da2m_deta(suma_a2, dKhs, dXi, cte_a2m):
 
     da2 = sum1*x1*dkhs + khs * x1 * dsum1 + khs * sum1 * dx1
     da2 *= cte_a2m
-    return np.hstack([a2, da2])
+    return torch.hstack([a2, da2])
 
 
 def d2a2m_deta(suma_a2,  d2Khs, d2Xi, cte_a2m):
@@ -42,7 +43,7 @@ def d2a2m_deta(suma_a2,  d2Khs, d2Xi, cte_a2m):
     d2a2 += 2 * sum1 * dkhs * dx1
     d2a2 += 2 * khs * dsum1 * dx1
     d2a2 *= cte_a2m
-    return np.hstack([a2, da2, d2a2])
+    return torch.hstack([a2, da2, d2a2])
 
 
 def da2m_new_deta(suma_a2, dKhs, cte_a2m):
@@ -66,7 +67,7 @@ def d2a2m_new_deta(suma_a2, d2Khs, cte_a2m):
     d2a2 = 2 * dkhs * dsum1 + sum1 * d2khs + d2sum1 * khs
     d2a2 *= cte_a2m
 
-    return np.hstack([da2, d2a2])
+    return torch.hstack([da2, d2a2])
 
 
 def d3a2m_new_deta(suma_a2, d3Khs, cte_a2m):
@@ -83,4 +84,4 @@ def d3a2m_new_deta(suma_a2, d3Khs, cte_a2m):
     d3a2 = 3 * dsum1 * d2khs + 3 * dkhs * d2sum1
     d3a2 += khs * d3sum1 + d3khs * sum1
     d3a2 *= cte_a2m
-    return np.hstack([da2, d2a2, d3a2])
+    return torch.hstack([da2, d2a2, d3a2])

@@ -1,5 +1,6 @@
 from __future__ import division, print_function, absolute_import
 import numpy as np
+import torch
 from .B_monomer import B, dB, d2B, d3B
 from .a1s_monomer import a1s, da1s, d2a1s, d3a1s
 
@@ -47,8 +48,8 @@ def a1B_eval(eta, I_lambdas, J_lambdas, lambdas, cctes, eps):
     a1sb_2r = a1sB(eta, 2*lambda_r, cctes_2lr, eps)
     a1sb_ar = a1sB(eta, lambda_ar, cctes_lar, eps)
 
-    a1sb_a1 = np.hstack([a1sb_a, a1sb_r])
-    a1sb_a2 = np.hstack([a1sb_2a, a1sb_ar, a1sb_2r])
+    a1sb_a1 = torch.hstack([a1sb_a, a1sb_r])
+    a1sb_a2 = torch.hstack([a1sb_2a, a1sb_ar, a1sb_2r])
     return a1sb_a1, a1sb_a2
 
 
@@ -66,8 +67,8 @@ def da1B_eval(eta, I_lambdas, J_lambdas, lambdas, cctes, eps):
     da1sb_2r = da1sB(eta, I_2lr, J_2lr, 2*lambda_r, cctes_2lr, eps)
     da1sb_ar = da1sB(eta, I_lar, J_lar, lambda_ar, cctes_lar, eps)
 
-    a1sb_a1 = np.column_stack([da1sb_a, da1sb_r])
-    a1sb_a2 = np.column_stack([da1sb_2a, da1sb_ar, da1sb_2r])
+    a1sb_a1 = torch.column_stack([da1sb_a, da1sb_r])
+    a1sb_a2 = torch.column_stack([da1sb_2a, da1sb_ar, da1sb_2r])
     return a1sb_a1, a1sb_a2
 
 
@@ -86,8 +87,8 @@ def d2a1B_eval(eta, I_lambdas, J_lambdas, lambdas, cctes, eps):
     d2a1sb_2r = d2a1sB(eta, I_2lr, J_2lr, 2*lambda_r, cctes_2lr, eps)
     d2a1sb_ar = d2a1sB(eta,  I_lar, J_lar, lambda_ar, cctes_lar, eps)
 
-    a1sb_a1 = np.column_stack([d2a1sb_a, d2a1sb_r])
-    a1sb_a2 = np.column_stack([d2a1sb_2a, d2a1sb_ar, d2a1sb_2r])
+    a1sb_a1 = torch.column_stack([d2a1sb_a, d2a1sb_r])
+    a1sb_a2 = torch.column_stack([d2a1sb_2a, d2a1sb_ar, d2a1sb_2r])
 
     return a1sb_a1, a1sb_a2
 
@@ -107,8 +108,8 @@ def d3a1B_eval(eta, I_lambdas, J_lambdas, lambdas, cctes, eps):
     d3a1sb_2r = d3a1sB(eta, I_2lr, J_2lr, 2*lambda_r, cctes_2lr, eps)
     d3a1sb_ar = d3a1sB(eta,  I_lar, J_lar, lambda_ar, cctes_lar, eps)
 
-    a1sb_a1 = np.column_stack([d3a1sb_a, d3a1sb_r])
-    a1sb_a2 = np.column_stack([d3a1sb_2a, d3a1sb_ar, d3a1sb_2r])
+    a1sb_a1 = torch.column_stack([d3a1sb_a, d3a1sb_r])
+    a1sb_a2 = torch.column_stack([d3a1sb_2a, d3a1sb_ar, d3a1sb_2r])
 
     return a1sb_a1, a1sb_a2
 
@@ -120,9 +121,9 @@ def x0lambda_eval(x0, lambda_a, lambda_r, lambda_ar):
     x02lr = x0**(2*lambda_r)
     x0lar = x0**lambda_ar
 
-    x0_a1 = np.hstack([x0la, -x0lr])
-    x0_a2 = np.hstack([x02la, -2*x0lar, x02lr])
+    x0_a1 = torch.hstack([x0la, -x0lr])
+    x0_a2 = torch.hstack([x02la, -2*x0lar, x02lr])
 
-    x0_a12 = np.hstack([lambda_a*x0la, -lambda_r*x0lr])
-    x0_a22 = np.hstack([lambda_a*x02la, -lambda_ar*x0lar, lambda_r*x02lr])
+    x0_a12 = torch.hstack([lambda_a*x0la, -lambda_r*x0lr])
+    x0_a22 = torch.hstack([lambda_a*x02la, -lambda_ar*x0lar, lambda_r*x02lr])
     return x0_a1, x0_a2, x0_a12, x0_a22

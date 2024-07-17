@@ -1,6 +1,6 @@
 from __future__ import division, print_function, absolute_import
 import numpy as np
-
+import torch
 
 # Equation 65
 def g2MCA(rho, suma_g2, da2m_new_deta, khs, eps, cte_g2s, deta_drho):
@@ -51,17 +51,17 @@ phi74 = -8
 
 # Equation 63
 def gammac(x0, nsigma, alpha, tetha):
-    gc = phi70*(-np.tanh(phi71*(phi72-alpha))+1)
-    gc *= nsigma*tetha*np.exp(phi73*nsigma + phi74*nsigma**2)
+    gc = phi70*(-torch.tanh(phi71*(phi72-alpha))+1)
+    gc *= nsigma*tetha*torch.exp(phi73*nsigma + phi74*nsigma**2)
     return gc
 
 
 def dgammac_deta(x03, nsigma, alpha, tetha):
 
-    cte = phi70*(-np.tanh(phi71*(phi72-alpha))+1)*tetha
-    g = cte * np.exp(phi73*nsigma + phi74*nsigma**2)
+    cte = phi70*(-torch.tanh(phi71*(phi72-alpha))+1)*tetha
+    g = cte * torch.exp(phi73*nsigma + phi74*nsigma**2)
 
-    dg = np.array([g, g])
+    dg = torch.tensor([g, g])
     dg[0] *= nsigma
 
     dg[1] *= (1. + nsigma*(phi73 + 2*phi74*nsigma))
@@ -72,10 +72,10 @@ def dgammac_deta(x03, nsigma, alpha, tetha):
 
 def d2gammac_deta(x03, nsigma, alpha, tetha):
 
-    cte = phi70*(-np.tanh(phi71*(phi72-alpha))+1)*tetha
-    g = cte * np.exp(phi73*nsigma+phi74*nsigma**2)
+    cte = phi70*(-torch.tanh(phi71*(phi72-alpha))+1)*tetha
+    g = cte * torch.exp(phi73*nsigma+phi74*nsigma**2)
 
-    dg = np.array([g, g, g])
+    dg = torch.tensor([g, g, g])
     dg[0] *= nsigma
 
     dg[1] *= (1. + nsigma*(phi73 + 2*phi74*nsigma))

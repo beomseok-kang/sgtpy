@@ -1,9 +1,11 @@
 from __future__ import division, print_function, absolute_import
 import numpy as np
+# REVISE : find equivalent for scipy.optimize.root or anything
 from scipy.optimize import root, minimize_scalar
 from ..constants import kb, Na
 from .EquilibriumResult import EquilibriumResult
 from warnings import warn
+import torch
 
 R = Na * kb
 
@@ -28,8 +30,8 @@ def mu_obj(rho, temp_aux, saft):
     muv = afcnv + rhov * dafcnv
     dmuv = Na * (rhol*d2afcnv + 2*dafcnv)
 
-    FO = np.array([mul-muv, Pl - Pv])
-    dFO = np.array([[dmul, -dmuv],
+    FO = torch.tensor([mul-muv, Pl - Pv])
+    dFO = torch.tensor([[dmul, -dmuv],
                    [dPl, - dPv]])
     return FO, dFO
 
@@ -106,7 +108,7 @@ def psat(saft, T, P0=None, v0=[None, None], Xass0=[None, None],
         limits_rhol = [saft.rhoc, 5*saft.rhoc]
         minpmin = minimize_scalar(fobj_pmin, bounds=limits_rhol,
                                   args=(temp_aux, saft), method='bounded')
-        P = (np.max([0, minpmin.fun]) - minpmax.fun) / 2.
+        P = (torch.max([0, minpmin.fun]) - minpmax.fun) / 2.
         good_initial = False
 
     if not good_initial:
@@ -128,7 +130,7 @@ def psat(saft, T, P0=None, v0=[None, None], Xass0=[None, None],
             if success:
                 break
         if not success:
-            rho0 = 1. / np.array([vl, vv])
+            rho0 = 1. / torch.tensor([vl, vv])
             sol = root(mu_obj, rho0, args=(temp_aux, saft), jac=True)
             success = sol.success
             i += sol.nfev
@@ -139,7 +141,9 @@ def psat(saft, T, P0=None, v0=[None, None], Xass0=[None, None],
             afcn, dafcn = dal
             P = rhomolecular**2 * dafcn/Na
     else:
-        rho0 = 1. / np.asarray([v0])
+        # REVISE
+        # rho0 = 1. / np.asarray([v0])
+        rho0 = 1. / torch.tensor([v0])
         sol = root(mu_obj, rho0, args=(temp_aux, saft), jac=True)
         success = sol.success
         i = sol.nfev

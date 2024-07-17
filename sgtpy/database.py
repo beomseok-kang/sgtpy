@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 import os
 from copy import copy
+import torch
 
 databasepath = os.path.join(os.path.dirname(__file__), 'database')
 databasepath += '/saftgamma_database.xlsx'
@@ -120,7 +121,7 @@ class GCdatabase(object):
         overwrite: bool, optional
             whether to overwrite or not current parameters of the database
         """
-        Nst = np.count_nonzero([nH, ne1, ne2])
+        Nst = torch.count_nonzero([nH, ne1, ne2])
         group_included = name in self.group_list
 
         if group_included and not overwrite:

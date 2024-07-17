@@ -14,7 +14,7 @@ from .tsat_saft import tsat
 from .critical_pure import get_critical
 
 from ..constants import kb, Na
-
+import torch
 
 R = Na * kb
 
@@ -24,7 +24,7 @@ def U_mie(r, c, eps, lambda_r, lambda_a):
     return u
 
 
-phi16 = np.array([[7.5365557, -37.60463, 71.745953, -46.83552, -2.467982,
+phi16 = torch.tensor([[7.5365557, -37.60463, 71.745953, -46.83552, -2.467982,
                  -0.50272, 8.0956883],
                  [-359.44, 1825.6, -3168.0, 1884.2, -0.82376, -3.1935, 3.7090],
                  [1550.9, -5070.1, 6534.6, -3288.7, -2.7171, 2.0883, 0],
@@ -33,10 +33,10 @@ phi16 = np.array([[7.5365557, -37.60463, 71.745953, -46.83552, -2.467982,
                  [-1911.28, 21390.175, -51320.7, 37064.54, 1103.742, -3264.61,
                  2556.181],
                  [9236.9, -129430., 357230., -315530., 1390.2, -4518.2,
-                 4241.6]])
+                 4241.6]], dtype=torch.float64)
 
 
-nfi = np.arange(0, 7)
+nfi = torch.arange(0, 7)
 nfi_num = nfi[:4]
 nfi_den = nfi[4:]
 
@@ -44,8 +44,13 @@ nfi_den = nfi[4:]
 # Equation 20
 def fi(alpha, i):
     phi = phi16[i-1]
-    num = np.dot(phi[nfi_num], np.power(alpha, nfi_num))
-    den = 1 + np.dot(phi[nfi_den], np.power(alpha, nfi_den - 3))
+    # num = np.dot(phi[nfi_num], np.power(alpha, nfi_num))
+    print(phi.dtype, alpha.dtype)
+    print(phi[nfi_num].dtype)
+    print((alpha**nfi_num).dtype)
+    num = torch.dot(phi[nfi_num], alpha ** nfi_num)
+    # den = 1 + np.dot(phi[nfi_den], np.power(alpha, nfi_den - 3))
+    den = 1 + torch.dot(phi[nfi_den], alpha ** (nfi_den - 3))
     return num/den
 
 
@@ -131,6 +136,8 @@ class saftvrmie_pure():
 
     def __init__(self, pure, compute_critical=True):
 
+        print("hello!")
+
         self.pure = pure
         self.Mw = pure.Mw
         self.ms = pure.ms
@@ -146,7 +153,8 @@ class saftvrmie_pure():
         self.c = self.lambda_r/dif_c*(self.lambda_r/self.lambda_a)**expc
         self.c2 = self.c**2
         alpha = self.c*(1/(self.lambda_a - 3) - 1/(self.lambda_r - 3))
-        self.alpha = alpha
+        # self.alpha = alpha
+        self.alpha = torch.tensor(alpha.clone().detach(), dtype=torch.float64)
 
         self.lambdas = self.lambda_a, self.lambda_r, self.lambda_ar
 
@@ -169,18 +177,18 @@ class saftvrmie_pure():
         self.umie = U_mie(1./roots, self.c, self.eps, self.lambda_r,
                           self.lambda_a)
 
-        c_matrix = np.array([[0.81096, 1.7888, -37.578, 92.284],
+        c_matrix = torch.tensor([[0.81096, 1.7888, -37.578, 92.284],
                             [1.0205, -19.341, 151.26, -463.5],
                             [-1.9057, 22.845, -228.14, 973.92],
                             [1.0885, -6.1962, 106.98, -677.64]])
 
-        lam_exp = np.array([0, -1, -2, -3])
+        lam_exp = torch.tensor([0, -1, -2, -3])
 
-        self.cctes_lr = np.matmul(c_matrix, self.lambda_r**lam_exp)
-        self.cctes_la = np.matmul(c_matrix, self.lambda_a**lam_exp)
-        self.cctes_lar = np.matmul(c_matrix, self.lambda_ar**lam_exp)
-        self.cctes_2lr = np.matmul(c_matrix, (2*self.lambda_r)**lam_exp)
-        self.cctes_2la = np.matmul(c_matrix, (2*self.lambda_a)**lam_exp)
+        self.cctes_lr = torch.matmul(c_matrix, self.lambda_r**lam_exp)
+        self.cctes_la = torch.matmul(c_matrix, self.lambda_a**lam_exp)
+        self.cctes_lar = torch.matmul(c_matrix, self.lambda_ar**lam_exp)
+        self.cctes_2lr = torch.matmul(c_matrix, (2*self.lambda_r)**lam_exp)
+        self.cctes_2la = torch.matmul(c_matrix, (2*self.lambda_a)**lam_exp)
         self.cctes = (self.cctes_la, self.cctes_lr,
                       self.cctes_2la, self.cctes_2lr, self.cctes_lar)
 
@@ -212,7 +220,7 @@ class saftvrmie_pure():
         if polar_bool:
             mpol = self.ms * (self.ms < 2) + 2 * (self.ms >= 2)
             self.mpol = mpol
-            aux1 = np.array([1, (mpol-1)/mpol, (mpol-1)/mpol*(mpol-2)/mpol])
+            aux1 = torch.tensor([1, (mpol-1)/mpol, (mpol-1)/mpol*(mpol-2)/mpol])
             self.anij = aij@aux1
             self.bnij = bij@aux1
             self.cnijk = cij@aux1
@@ -223,7 +231,7 @@ class saftvrmie_pure():
             self.mupolad2 = self.mupol**2*cte/(self.ms*self.eps*self.sigma3)
 
         # For SGT Computations
-        self.cii = np.array(pure.cii, ndmin=1)
+        self.cii = torch.tensor(pure.cii, ndmin=1)
 
         # computing critical point
         self.critical = False
@@ -258,9 +266,10 @@ class saftvrmie_pure():
             correlated influence parameter [J m^5 / mol^2]
         """
         cii = self.ms * (0.12008072630855947 + 2.2197907527439655 * self.alpha)
-        cii *= np.sqrt(Na**2 * self.eps * self.sigma**5)
+        cii *= torch.sqrt(Na**2 * self.eps * self.sigma**5)
         cii **= 2
 
+        # REVISE
         cii = np.array([cii], ndmin=1)
         if overwrite:
             self.cii = cii
@@ -288,8 +297,8 @@ class saftvrmie_pure():
             computed diameter [m]
         """
 
-        integrer = np.exp(-beta * self.umie)
-        d = self.sigma * (1. - np.dot(integrer, self.weights))
+        integrer = torch.exp(-beta * self.umie)
+        d = self.sigma * (1. - torch.dot(integrer, self.weights))
         return d
 
     def eta_sigma(self, rho):
@@ -309,7 +318,7 @@ class saftvrmie_pure():
         eta : float
             packing fraction [Adim]
         """
-        return self.ms * rho * np.pi * self.sigma3 / 6
+        return self.ms * rho * torch.pi * self.sigma3 / 6
 
     def eta_bh(self, rho, dia3):
         """
@@ -332,7 +341,7 @@ class saftvrmie_pure():
         deta : float
             derivative of packing fraction respect to density [m^3]
         """
-        deta_drho = self.ms * np.pi * dia3 / 6
+        deta_drho = self.ms * torch.pi * dia3 / 6
         eta = deta_drho * rho
         return eta, deta_drho
 
@@ -398,24 +407,24 @@ class saftvrmie_pure():
         # for chain contribution
         beps = beta*self.eps
         beps2 = beps**2
-        tetha = np.exp(beps)-1
-        x0_vector = np.array([1, x0, x0**2, x0**3])
+        tetha = torch.exp(beps)-1
+        x0_vector = torch.tensor([1, x0, x0**2, x0**3])
 
-        cte_g1s = 1/(2*np.pi*self.eps*self.ms*dia3)
+        cte_g1s = 1/(2*torch.pi*self.eps*self.ms*dia3)
         cte_g2s = cte_g1s / self.eps
         # For Association
-        Fab = np.exp(beta * self.eABij) - 1
+        Fab = torch.exp(beta * self.eABij) - 1
         rc, rc2, rc3 = self.rcij, self.rcij2, self.rcij3
         rd, rd2, rd3 = self.rdij, self.rdij2, self.rdij3
         dia2 = dia**2
 
-        Kab = np.log((rc + 2*rd)/dia)
+        Kab = torch.log((rc + 2*rd)/dia)
         Kab *= 6*rc3 + 18 * rc2*rd - 24 * rd3
         aux1 = (rc + 2 * rd - dia)
         aux2 = (22*rd2 - 5*rc*rd - 7*rd*dia - 8*rc2 + rc*dia + dia2)
         Kab += aux1 * aux2
         Kab /= (72*rd2 * self.sigma3)
-        Kab *= 4 * np.pi * dia2
+        Kab *= 4 * torch.pi * dia2
 
         # For polar
         epsa = self.eps / T / kb
@@ -1043,7 +1052,7 @@ class saftvrmie_pure():
         beta = temp_aux[0]
         RT = Na/beta
         Z = P * v / RT
-        lnphi = ar + (Z - 1.) - np.log(Z)
+        lnphi = ar + (Z - 1.) - torch.log(Z)
         return lnphi, v, Xass
 
     def logfug(self, T, P, state, v0=None, Xass0=None):
@@ -1094,8 +1103,11 @@ class saftvrmie_pure():
         ci: float
             influence parameters [J m5 mol-2]
         '''
+        # torch polyval
+        # REVISE
+        dim = self.cii.shape[0]
 
-        return np.polyval(self.cii, T)
+        return torch.sum(T ** torch.arange())
 
     def sgt_adim(self, T):
         '''
@@ -1128,7 +1140,7 @@ class saftvrmie_pure():
         Tfactor = 1.
         Pfactor = 1.
         rofactor = 1.
-        tenfactor = np.sqrt(cii) * 1000  # To give tension in mN/m
+        tenfactor = torch.sqrt(cii) * 1000  # To give tension in mN/m
         zfactor = 10**-10
 
         return Tfactor, Pfactor, rofactor, tenfactor, zfactor
@@ -1372,7 +1384,7 @@ class saftvrmie_pure():
         F = a
         dFdT = (a_2/12 - 2*a_1/3 + 2*a1/3 - a2/12)/h
         Sr_TVN = -T*dFdT - F  # residual entropy (TVN) divided by R
-        Sr_TPN = Sr_TVN + np.log(Z)  # residual entropy (TPN) divided by R
+        Sr_TPN = Sr_TVN + torch.log(Z)  # residual entropy (TPN) divided by R
         Sr_TPN *= R
         return Sr_TPN
 
@@ -1655,6 +1667,6 @@ class saftvrmie_pure():
         betas = -rho * (Cv/Cp) / dP_dV
 
         w2 = 1000./(rho * betas * self.Mw)
-        w = np.sqrt(w2)
+        w = torch.sqrt(w2)
 
         return w

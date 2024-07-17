@@ -3,7 +3,7 @@ import numpy as np
 from scipy.optimize import root
 from .EquilibriumResult import EquilibriumResult
 from ..constants import kb, Na
-
+import torch
 
 def fobj_crit(inc, eos):
 
@@ -24,7 +24,7 @@ def fobj_crit(inc, eos):
     # fo /= rho**2
 
     # fo = np.array([-dP, 2*dP + rho*d2P_drho])
-    fo = np.array([-dP, 2*dP/rho + d2P_drho])
+    fo = torch.array([-dP, 2*dP/rho + d2P_drho])
 
     return fo
 
@@ -53,7 +53,7 @@ def initial_guess_criticalpure(eos, n=50):
     """
 
     romin = 0.7405
-    romin *= 6/(Na*eos.ms*np.pi*eos.sigma**3)
+    romin *= 6/(Na*eos.ms*torch.pi*eos.sigma**3)
 
     roc0 = romin/5
     Tc0 = eos.ms*eos.eps/kb
@@ -62,7 +62,7 @@ def initial_guess_criticalpure(eos, n=50):
     ro0 = 0.25*roc0
     rof = 2*roc0
     # Step 1. Check if tc0 is subcritical or supercritical
-    ro = np.linspace(ro0, rof, n)
+    ro = torch.linspace(ro0, rof, n)
     dro = ro[1] - ro[0]
     for i in range(n):
         P, dP = eos.dP_drho(ro[i], Tc0)
@@ -79,7 +79,7 @@ def initial_guess_criticalpure(eos, n=50):
 
     # Step 2. Find the temperature transition subcritical to supercritical
     loop = True
-    ro = np.linspace(ro0, rof, n)
+    ro = torch.linspace(ro0, rof, n)
     dro = ro[1] - ro[0]
     k = 0
     T = [Tc0]  # List to store the studied temperatures
@@ -114,7 +114,7 @@ def initial_guess_criticalpure(eos, n=50):
 
     # Step 3. Find rho_min and rho_max at the subcritical temperature
 
-    ro = np.linspace(ro0, rof, n)
+    ro = torch.linspace(ro0, rof, n)
     dro = ro[1] - ro[0]
     ro_int = []
     flag = 0
@@ -169,7 +169,7 @@ def get_critical(eos, Tc0=None, rhoc0=None, method='hybr', full_output=False):
     if Tc0 is None and rhoc0 is None:
         Tc0, rhoc0 = initial_guess_criticalpure(eos, n=30)
 
-    inc0 = np.array([Tc0, rhoc0])
+    inc0 = torch.tensor([Tc0, rhoc0])
     sol = root(fobj_crit, inc0, method=method, args=eos)
     Tc, rhoc = sol.x
     Pc = eos.pressure(rhoc, Tc)
@@ -181,4 +181,4 @@ def get_critical(eos, Tc0=None, rhoc0=None, method='hybr', full_output=False):
         out = EquilibriumResult(dict)
     else:
         out = Tc, Pc, rhoc
-    return out
+    return outarray

@@ -8,7 +8,7 @@ from .config_asso import asso_aux
 from .secondorder import secondorder47_1, secondorder47_2, secondorder19_14
 from .secondorder import secondorder21, secondorder22, secondorder23
 from .database import database
-
+import torch
 
 class component(object):
     '''
@@ -76,7 +76,7 @@ class component(object):
         self.Zc = Zc  # Critical compresibility factor
         self.Vc = Vc  # Critical volume in m3/mol
         self.w = w  # Acentric Factor
-        self.cii = np.atleast_1d(cii)  # Influence factor SGT, list or array
+        self.cii = torch.tensor(np.atleast_1d(cii))  # Influence factor SGT, list or array
         self.Mw = Mw  # molar weight in g/mol
         self.nc = 1
         self.GC = GC  # Dict, Group contribution info
@@ -85,8 +85,8 @@ class component(object):
         self.ms = ms
         self.sigma = sigma * 1e-10  # meters
         self.eps = eps * kb  # Joule
-        self.lambda_a = np.asarray(lambda_a, dtype=float)
-        self.lambda_r = np.asarray(lambda_r, dtype=float)
+        self.lambda_a = torch.tensor(lambda_a, dtype=float)
+        self.lambda_r = torch.tensor(lambda_r, dtype=float)
         self.lambda_ar = self.lambda_r + self.lambda_a
 
         # For ring molecules (see Langmuir 2017, 33, 11518-11529, Table I.)
@@ -124,7 +124,8 @@ class component(object):
             influence parameter at given temperature [J m^5 / mol^2]
 
         """
-
+        # REVISE
+        # interim
         return np.polyval(self.cii, T)
 
     def saftvrmie_forcefield(self, ms, rhol07, ring_type=None):
@@ -168,8 +169,8 @@ class component(object):
         """
         out = saft_forcefield(ms, self.Tc, self.w, rhol07, ring_type)
         lambda_r, lambda_a, ms, eps, sigma, ring = out
-        self.lambda_a = np.asarray(lambda_a)
-        self.lambda_r = np.asarray(lambda_r)
+        self.lambda_a = torch.tensor(lambda_a)
+        self.lambda_r = torch.tensor(lambda_r)
         self.lambda_ar = self.lambda_r + self.lambda_a
         self.ms = ms
         self.sigma = sigma

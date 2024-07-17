@@ -1,10 +1,10 @@
 from __future__ import division, print_function, absolute_import
 import numpy as np
-
+import torch
 
 def lngmie(ghs, g1s, g2s, be, be2):
 
-    lng = np.log(ghs) + (be*g1s+be2*g2s)/ghs
+    lng = torch.log(ghs) + (be*g1s+be2*g2s)/ghs
     return lng
 
 
@@ -17,12 +17,12 @@ def dlngmie_drho(ghs, g1s, g2s, be, be2):
 
     aux = (be*g1+be2*g2)
 
-    lng = np.log(ghs) + aux/ghs
+    lng = torch.log(ghs) + aux/ghs
 
     dlng = be * ghs * (dg1 + be * dg2)
     dlng += dghs * (ghs - aux)
     dlng /= ghs**2
-    return np.hstack([lng, dlng])
+    return torch.hstack([lng, dlng])
 
 
 def d2lngmie_drho(ghs, g1s, g2s, be, be2):
@@ -37,7 +37,7 @@ def d2lngmie_drho(ghs, g1s, g2s, be, be2):
     aux1 = be*g1+be2*g2
     aux2 = be*dg1+be2*dg2
 
-    lng = np.log(ghs) + aux1/ghs
+    lng = torch.log(ghs) + aux1/ghs
 
     dlng = ghs * aux2
     dlng += dghs * (ghs - aux1)
@@ -48,4 +48,4 @@ def d2lngmie_drho(ghs, g1s, g2s, be, be2):
     d2lng += ghs*(-2*dghs*aux2-dghs2 - aux1*d2ghs)
     d2lng /= ghs3
 
-    return np.hstack([lng, dlng, d2lng])
+    return torch.hstack([lng, dlng, d2lng])

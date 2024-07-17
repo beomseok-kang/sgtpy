@@ -1,10 +1,11 @@
 from __future__ import division, print_function, absolute_import
 import numpy as np
+import torch
 
-
+# TO CHANGE
 def association_config(eos):
 
-    types = np.array(['B', 'P', 'N'])
+    types = torch.tensor(['B', 'P', 'N'])
     nozero = np.nonzero(eos.sites)
     types = types[nozero]
     ntypes = np.asarray(eos.sites)[nozero]
@@ -33,7 +34,7 @@ def association_config(eos):
 def Xass_solver(nsites, KIJ, diagasso, Xass0=None):
 
     if Xass0 is None:
-        Xass = 0.2 * np.ones(nsites)
+        Xass = 0.2 * torch.ones(nsites)
     else:
         Xass = 1. * Xass0
     omega = 0.2
@@ -48,10 +49,10 @@ def Xass_solver(nsites, KIJ, diagasso, Xass0=None):
     HIJ = - 1. * KIJ
     HIJ[diagasso] -= (1. + KIJXass)/Xass
     for i in range(15):
-        dXass = np.linalg.solve(HIJ, -dQ)
+        dXass = torch.linalg.solve(HIJ, -dQ)
         Xnew = Xass + dXass
 
-        is_nan = np.isnan(Xnew)
+        is_nan = torch.isnan(Xnew)
         Xnew[is_nan] = 0.2
 
         Xnew_neg = Xnew < 0.
@@ -63,7 +64,7 @@ def Xass_solver(nsites, KIJ, diagasso, Xass0=None):
         Xass = Xnew
         KIJXass = KIJ@Xass
         dQ = (1./Xass - 1.) - KIJXass
-        sucess = np.linalg.norm(dQ) < 1e-9
+        sucess = torch.linalg.norm(dQ) < 1e-9
         if sucess:
             break
         HIJ = - 1. * KIJ
@@ -113,27 +114,27 @@ def d2Iab_drho(Kab, eta, deta_drho):
 def dXass_drho(rho, Xass, DIJ, Dabij, dDabij_drho, CIJ):
     brho = -(DIJ*(Dabij + rho * dDabij_drho))@Xass
     brho *= Xass**2
-    dXass = np.linalg.solve(CIJ, brho)
+    dXass = torch.linalg.solve(CIJ, brho)
     return dXass
 
 
 def d2Xass_drho(rho, Xass, dXass_drho, DIJ, Dabij, dDabij_drho, d2Dabij_drho,
                 CIJ):
 
-    b2rho = np.sum(DIJ*(Xass*d2Dabij_drho + 2*dXass_drho*dDabij_drho), axis=1)
+    b2rho = torch.sum(DIJ*(Xass*d2Dabij_drho + 2*dXass_drho*dDabij_drho), axis=1)
     b2rho *= - rho
     b2rho += 2 * (1/Xass - 1) / (rho**2)
     b2rho *= Xass**2
     b2rho += 2 * dXass_drho / (rho)
     b2rho += 2 * dXass_drho**2 / (Xass)
 
-    d2Xass_drho = np.linalg.solve(CIJ, b2rho)
+    d2Xass_drho = torch.linalg.solve(CIJ, b2rho)
     return d2Xass_drho
 
 
 def association_solver(self, rhom, temp_aux, Xass0=None):
     if Xass0 is None:
-        Xass = 0.2 * np.ones(self.nsites)
+        Xass = 0.2 * torch.ones(self.nsites)
     else:
         Xass = 1. * Xass0
 
@@ -144,7 +145,7 @@ def association_solver(self, rhom, temp_aux, Xass0=None):
     Kab = temp_aux[20]
     iab = Iab(Kab, eta)
     Dab = self.sigma3 * Fab * iab
-    Dabij = np.zeros([self.nsites, self.nsites])
+    Dabij = torch.zeros([self.nsites, self.nsites])
     Dabij[self.indexabij] = Dab
     KIJ = rhom * (self.DIJ*Dabij)
     Xass = Xass_solver(self.nsites, KIJ, self.diagasso, Xass0)
@@ -160,7 +161,7 @@ def association_check(self, rhom, temp_aux, Xass):
     Kab = temp_aux[20]
     iab = Iab(Kab, eta)
     Dab = self.sigma3 * Fab * iab
-    Dabij = np.zeros([self.nsites, self.nsites])
+    Dabij = torch.zeros([self.nsites, self.nsites])
     Dabij[self.indexabij] = Dab
     KIJ = rhom * (self.DIJ*Dabij)
     fo = Xass - 1. / (1. + KIJ@Xass)

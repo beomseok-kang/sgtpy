@@ -1,0 +1,30 @@
+Metadata-Version: 2.1
+Name: sgtpy
+Version: 0.0.20
+Summary: SAFT-VR-MIE EOS and SGT
+Home-page: https://github.com/gustavochm/sgtpy
+Download-URL: https://github.com/gustavochm/sgtpy.git
+Author: Gustavo Chaparro Maldonado, Andres Mejia Matallana, Erich A. Muller
+Author-email: g.chaparro-maldonado21@imperial.ac.uk
+License: MIT
+Keywords: SAFT-VR-Mie,SGT
+Platform: Windows
+Platform: Linux
+Platform: Mac OS
+Platform: Unix
+License-File: LICENSE.txt
+Requires-Dist: numpy
+Requires-Dist: scipy
+Requires-Dist: cython
+Requires-Dist: numba
+Requires-Dist: pandas
+Requires-Dist: openpyxl
+
+SGTPy is an open-source python package of SAFT-VR-Mie and SAFT-Gamma-Mie Equations of State (EOS).
+SGTPy allows to work with pure fluids and fluid mixtures, additionally the fluids
+can be modeled considering association, cross-association and polar contributions.
+SGTPy was built on top of phasepy's phase equilibrium and Square
+Gradient Theory (SGT) functions. These functions were updated to speed-up
+calculations of associative mixtures.
+
+SGTPy relies on Numpy, SciPy and PhasePy.

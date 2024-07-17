@@ -1,10 +1,10 @@
 from __future__ import division, print_function, absolute_import
 import numpy as np
-
+import torch
 
 def asso_aux(Nst_kk, sites_kk, groups_index, subgroups, df_asso_kl):
 
-    index_asso = np.where(Nst_kk > 0)
+    index_asso = torch.where(Nst_kk > 0)
     molecule_id_index_asso = groups_index[index_asso]
     subgroup_id_asso = subgroups[index_asso]
     sites_asso = sites_kk[index_asso]
@@ -12,26 +12,26 @@ def asso_aux(Nst_kk, sites_kk, groups_index, subgroups, df_asso_kl):
 
     molecule_id_index_sites = []
     for i, j in enumerate(sites_asso):
-        molecule_id_index_sites += [molecule_id_index_asso[i]] * np.count_nonzero(j)
-    molecule_id_index_sites = np.asarray(molecule_id_index_sites)
+        molecule_id_index_sites += [molecule_id_index_asso[i]] * torch.count_nonzero(j)
+    molecule_id_index_sites = torch.tensor(molecule_id_index_sites)
 
     group_asso_index = []
     for i, j in enumerate(sites_kk):
-        group_asso_index += np.count_nonzero(j) * [i]
-    group_asso_index = np.asarray(group_asso_index)
+        group_asso_index += torch.count_nonzero(j) * [i]
+    group_asso_index = torch.tensor(group_asso_index)
 
     nsites = len(group_asso_index)
-    epsAB_kl = np.zeros([nsites, nsites])
-    kAB_kl = np.zeros([nsites, nsites])
+    epsAB_kl = torch.zeros([nsites, nsites])
+    kAB_kl = torch.zeros([nsites, nsites])
 
-    sites_cumsum = np.cumsum(np.hstack([0., n_sites_molecule[:-1]]), dtype=np.int64)
+    sites_cumsum = torch.cumsum(torch.hstack([0., n_sites_molecule[:-1]]), dtype=torch.int64)
 
     ngroups = sites_asso.shape[0]
-    move_pos_asso = np.array(ngroups*[np.arange(0, 3)])
+    move_pos_asso = torch.tensor(ngroups*[torch.arange(0, 3)])
     where_0e1 = sites_asso[:, 0] == 0
-    move_pos_asso[where_0e1] = np.array([0, 0, 1])
+    move_pos_asso[where_0e1] = torch.tensor([0, 0, 1])
     where_0e2 = sites_asso[:, 1] == 0
-    move_pos_asso[where_0e2] = np.array([0, 0, 0])
+    move_pos_asso[where_0e2] = torch.tensor([0, 0, 0])
 
     # index of associating molecule number
     indexABij1 = []
@@ -130,8 +130,9 @@ def asso_aux(Nst_kk, sites_kk, groups_index, subgroups, df_asso_kl):
                     values = dfll.iloc[0].values[0:6]
                     _, siteK_ll, _, siteL_ll, epsAB_ll, kAB_ll = values
 
-                    epsAB = np.sqrt(epsAB_kk * epsAB_ll)
-                    kAB = ((np.cbrt(kAB_kk) + np.cbrt(kAB_ll))/2)**3
+                    epsAB = torch.sqrt(epsAB_kk * epsAB_ll)
+                    # kAB = ((np.cbrt(kAB_kk) + np.cbrt(kAB_ll))/2)**3
+                    kAB=((kAB_kk ** (1/3)) + (kAB_ll ** (1/3))/2)**3 
 
                     bool_k1 = [siteK_kk, siteL_kk] == ['H', 'e1']
                     bool_k2 = [siteL_kk, siteK_kk] == ['H', 'e1']
@@ -256,17 +257,21 @@ def asso_aux(Nst_kk, sites_kk, groups_index, subgroups, df_asso_kl):
                         indexABij1.append(index0)
                         indexABij2.append(indexf)
 
-    indexABij1 = np.hstack([indexABij1])
-    indexABij2 = np.hstack([indexABij2])
+    indexABij1 = torch.hstack([indexABij1])
+    indexABij2 = torch.hstack([indexABij2])
 
-    indexAB_id1 = np.hstack([indexAB_id1])
-    indexAB_id2 = np.hstack([indexAB_id2])
+    indexAB_id1 = torch.hstack([indexAB_id1])
+    indexAB_id2 = torch.hstack([indexAB_id2])
 
     # make sure association indeces are integers
-    indexABij1 = indexABij1.astype(int)
-    indexABij2 = indexABij2.astype(int)
-    indexAB_id1 = indexAB_id1.astype(int)
-    indexAB_id2 = indexAB_id2.astype(int)
+    # indexABij1 = indexABij1.astype(int)
+    # indexABij2 = indexABij2.astype(int)
+    # indexAB_id1 = indexAB_id1.astype(int)
+    # indexAB_id2 = indexAB_id2.astype(int)
+    indexABij1 = torch.tensor(indexABij1.clone(), dtype=int)
+    indexABij2 = torch.tensor(indexABij2.clone(), dtype=int)
+    indexAB_id1 = torch.tensor(indexAB_id1.clone(), dtype=int)
+    indexAB_id2 = torch.tensor(indexAB_id2.clone(), dtype=int)
 
     indexAB_id = (indexAB_id1, indexAB_id2)
     indexABij = (indexABij1, indexABij2)
