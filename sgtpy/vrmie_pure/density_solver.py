@@ -2,6 +2,7 @@ from __future__ import division, print_function, absolute_import
 import numpy as np
 from ..constants import Na
 from scipy.optimize import minimize_scalar, brentq
+from xitorch.optimize import minimize
 import torch
 
 def dPsaft_fun(rho, temp_aux, saft):
@@ -82,14 +83,23 @@ def density_topliss(state, temp_aux, P, Xass0, saft):
     Xass = Xass0
 
     # Stage 1
-    bracket = [rho_lb, rho_ub]
+    # bracket = [rho_lb, rho_ub]
+    bracket = [rho_lb, rho_ub.item()]
+
     if flag == 1:
         # Found inflexion point
-        sol_inf = minimize_scalar(dPsaft_fun, args=(temp_aux, saft),
-                                  bounds=bracket, method='Bounded',
-                                  options={'xatol': 1e-1})
-        rho_inf = sol_inf.x
-        dP_inf = sol_inf.fun
+        # sol_inf = minimize_scalar(dPsaft_fun, args=(temp_aux, saft),
+        #                           bounds=bracket, method='Bounded',
+        #                           options={'xatol': 1e-1})
+        # rho_inf = sol_inf.x
+        # dP_inf = sol_inf.fun
+        # if dP_inf > 0:
+        #     flag = 3
+        # else:
+        #     flag = 2
+        init_rho = (rho_lb + rho_ub)/2
+        rho_inf = minimize(dPsaft_fun, init_rho, args=(temp_aux, saft), method="linearmixing")
+        dP_inf = dPsaft_fun(rho_inf, temp_aux, saft)
         if dP_inf > 0:
             flag = 3
         else:

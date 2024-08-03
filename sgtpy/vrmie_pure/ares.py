@@ -129,7 +129,7 @@ def dares_drho(self, rho, temp_aux, Xass0=None):
     dghs = dgdHS_drho(x0_vector, eta, drho)
 
     # g1sigma
-    suma_g1 = self.c * torch.dot(a1sb_a1[:2], x0_a12)
+    suma_g1 = self.c * torch.matmul(a1sb_a1[:2], x0_a12)
     suma_g1 *= drho[:2]
     d2a1m_drho = a1m_eval[1:]*drho[1:]
     dg1s = dg1sigma_drho(rho, suma_g1, d2a1m_drho, cte_g1s)
@@ -141,9 +141,9 @@ def dares_drho(self, rho, temp_aux, Xass0=None):
     da2m_new = d2a2m_new_deta(suma_a2, dkhs, cte_a2m)
     da2m_new_drho = da2m_new*drho[1:]
 
-    suma_g2 = self.c2*torch.dot(a1sb_a2[:2],  x0_a22)
+    suma_g2 = self.c2*torch.matmul(a1sb_a2[:2],  x0_a22)
     suma_g2 *= drho[:2]
-
+    
     dkhs_drho = dkhs[:2]*drho[:2]
 
     dg2m = dg2MCA_drho(rho, suma_g2, da2m_new_drho, dkhs_drho, self.eps,
@@ -230,7 +230,7 @@ def d2ares_drho(self, rho, temp_aux, Xass0=None):
     dghs = d2gdHS_drho(x0_vector, eta, drho)
 
     # g1sigma
-    suma_g1 = self.c * torch.dot(a1sb_a1[:3], x0_a12)
+    suma_g1 = self.c * torch.matmul(a1sb_a1[:3], x0_a12)
     suma_g1 *= drho[:3]
     d3a1m_drho = a1m_eval[1:]*drho[1:]
     dg1s = d2g1sigma_drho(rho, suma_g1, d3a1m_drho, cte_g1s)
@@ -242,7 +242,7 @@ def d2ares_drho(self, rho, temp_aux, Xass0=None):
     da2m_new = d3a2m_new_deta(suma_a2, dkhs, cte_a2m)
     da2m_new_drho = da2m_new*drho[1:]
 
-    suma_g2 = self.c2*torch.dot(a1sb_a2[:3],  x0_a22)
+    suma_g2 = self.c2*torch.matmul(a1sb_a2[:3],  x0_a22)
     suma_g2 *= drho[:3]
 
     dkhs_drho = dkhs[:3]*drho[:3]

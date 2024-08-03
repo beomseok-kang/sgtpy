@@ -31,7 +31,7 @@ def dkHS(eta):
     khs = num1/den
     dkhs = num2/den**2
 
-    return khs, dkhs
+    return torch.hstack([khs, dkhs])
 
 
 def d2kHS(eta):
@@ -44,7 +44,7 @@ def d2kHS(eta):
     khs = num1/den
     dkhs = num2/den**2
     d2khs = num3/den**3
-    return khs, dkhs, d2khs
+    return torch.hstack([khs, dkhs, d2khs])
 
 
 def d3kHS(eta):
@@ -63,7 +63,7 @@ def d3kHS(eta):
     dkhs = num2/den**2
     d2khs = num3/den**3
     d3khs = num4/den**4
-    return khs, dkhs, d2khs, d3khs
+    return torch.hstack([khs, dkhs, d2khs, d3khs])
 
 
 def eta_eff(eta, ci):

@@ -1,6 +1,7 @@
 from __future__ import division, print_function, absolute_import
 import numpy as np
 from scipy.optimize import root
+from xitorch.optimize import rootfinder
 from .EquilibriumResult import EquilibriumResult
 from ..constants import kb, Na
 import torch
@@ -8,6 +9,7 @@ import torch
 def fobj_crit(inc, eos):
 
     T, rho = inc
+    print("input: ", T, rho)
 
     h = 1e-4
 
@@ -24,7 +26,8 @@ def fobj_crit(inc, eos):
     # fo /= rho**2
 
     # fo = np.array([-dP, 2*dP + rho*d2P_drho])
-    fo = torch.array([-dP, 2*dP/rho + d2P_drho])
+    fo = torch.tensor([-dP, 2*dP/rho + d2P_drho])
+    print(fo)
 
     return fo
 
@@ -169,10 +172,18 @@ def get_critical(eos, Tc0=None, rhoc0=None, method='hybr', full_output=False):
     if Tc0 is None and rhoc0 is None:
         Tc0, rhoc0 = initial_guess_criticalpure(eos, n=30)
 
+    print("Initial guess: ", Tc0, rhoc0)
     inc0 = torch.tensor([Tc0, rhoc0])
-    sol = root(fobj_crit, inc0, method=method, args=eos)
-    Tc, rhoc = sol.x
+    # sol = root(fobj_crit, inc0, method=method, args=eos)
+    sol = rootfinder(fobj_crit, inc0, method="broyden1", params=(eos,))
+    # sol = rootfinder(fobj_crit, inc0, method="linearmixing", params=(eos,))
+    # Tc, rhoc = sol.x
+    # Tc = torch.tensor(Tc)
+    # rhoc = torch.tensor(rhoc)
+    Tc, rhoc = sol
+    print(sol)
     Pc = eos.pressure(rhoc, Tc)
+    print(fobj_crit(sol, eos))
     # print(sol)
     if full_output:
         dict = {'Tc': Tc, 'Pc': Pc, 'rhoc': rhoc, 'error': sol.fun,
@@ -181,4 +192,4 @@ def get_critical(eos, Tc0=None, rhoc0=None, method='hybr', full_output=False):
         out = EquilibriumResult(dict)
     else:
         out = Tc, Pc, rhoc
-    return outarray
+    return out

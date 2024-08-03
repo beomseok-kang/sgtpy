@@ -5,6 +5,8 @@ import torch
 
 def gauss(n):
     roots, dif1 = jcobi_roots(n, N0=0, N1=0, Al=0, Be=0)
+    roots = torch.tensor(roots)
+    dif1 = torch.tensor(dif1)
     ax = 1
     ax /= roots
     ax /= (1-roots)

@@ -45,9 +45,6 @@ nfi_den = nfi[4:]
 def fi(alpha, i):
     phi = phi16[i-1]
     # num = np.dot(phi[nfi_num], np.power(alpha, nfi_num))
-    print(phi.dtype, alpha.dtype)
-    print(phi[nfi_num].dtype)
-    print((alpha**nfi_num).dtype)
     num = torch.dot(phi[nfi_num], alpha ** nfi_num)
     # den = 1 + np.dot(phi[nfi_den], np.power(alpha, nfi_den - 3))
     den = 1 + torch.dot(phi[nfi_den], alpha ** (nfi_den - 3))
@@ -136,8 +133,6 @@ class saftvrmie_pure():
 
     def __init__(self, pure, compute_critical=True):
 
-        print("hello!")
-
         self.pure = pure
         self.Mw = pure.Mw
         self.ms = pure.ms
@@ -151,10 +146,9 @@ class saftvrmie_pure():
         dif_c = self.lambda_r - self.lambda_a
         expc = self.lambda_a/dif_c
         self.c = self.lambda_r/dif_c*(self.lambda_r/self.lambda_a)**expc
-        self.c2 = self.c**2
-        alpha = self.c*(1/(self.lambda_a - 3) - 1/(self.lambda_r - 3))
+        self.c2 = self.c*self.c
+        self.alpha = self.c*(1/(self.lambda_a - 3) - 1/(self.lambda_r - 3))
         # self.alpha = alpha
-        self.alpha = torch.tensor(alpha.clone().detach(), dtype=torch.float64)
 
         self.lambdas = self.lambda_a, self.lambda_r, self.lambda_ar
 
@@ -163,12 +157,12 @@ class saftvrmie_pure():
         self.cte_a2m = 0.5*self.eps*self.c2
         self.eps3 = self.eps**3
 
-        self.f1 = fi(alpha, 1)
-        self.f2 = fi(alpha, 2)
-        self.f3 = fi(alpha, 3)
-        self.f4 = fi(alpha, 4)
-        self.f5 = fi(alpha, 5)
-        self.f6 = fi(alpha, 6)
+        self.f1 = fi(self.alpha, 1)
+        self.f2 = fi(self.alpha, 2)
+        self.f3 = fi(self.alpha, 3)
+        self.f4 = fi(self.alpha, 4)
+        self.f5 = fi(self.alpha, 5)
+        self.f6 = fi(self.alpha, 6)
 
         roots, weights = gauss(100)
         self.roots = roots
@@ -180,7 +174,7 @@ class saftvrmie_pure():
         c_matrix = torch.tensor([[0.81096, 1.7888, -37.578, 92.284],
                             [1.0205, -19.341, 151.26, -463.5],
                             [-1.9057, 22.845, -228.14, 973.92],
-                            [1.0885, -6.1962, 106.98, -677.64]])
+                            [1.0885, -6.1962, 106.98, -677.64]], dtype=torch.float64)
 
         lam_exp = torch.tensor([0, -1, -2, -3])
 
@@ -231,7 +225,7 @@ class saftvrmie_pure():
             self.mupolad2 = self.mupol**2*cte/(self.ms*self.eps*self.sigma3)
 
         # For SGT Computations
-        self.cii = torch.tensor(pure.cii, ndmin=1)
+        self.cii = torch.tensor(np.atleast_1d(pure.cii))
 
         # computing critical point
         self.critical = False
@@ -297,8 +291,13 @@ class saftvrmie_pure():
             computed diameter [m]
         """
 
+        # print(beta)
+        # print(self.umie)
+        # print(beta * self.umie)
         integrer = torch.exp(-beta * self.umie)
+        # print("integrer:", integrer)
         d = self.sigma * (1. - torch.dot(integrer, self.weights))
+        # print(d)
         return d
 
     def eta_sigma(self, rho):
@@ -375,9 +374,8 @@ class saftvrmie_pure():
         temp_aux : list
              list of computed parameters
         """
-
-        beta = 1 / (kb*T)
-        beta2 = beta**2
+        beta = 1 / (kb * T)
+        beta2 = beta*beta
         beta3 = beta2*beta
         dia = self.diameter(beta)
         dia3 = dia**3
@@ -407,18 +405,18 @@ class saftvrmie_pure():
         # for chain contribution
         beps = beta*self.eps
         beps2 = beps**2
-        tetha = torch.exp(beps)-1
+        tetha = np.exp(beps)-1
         x0_vector = torch.tensor([1, x0, x0**2, x0**3])
 
         cte_g1s = 1/(2*torch.pi*self.eps*self.ms*dia3)
         cte_g2s = cte_g1s / self.eps
         # For Association
-        Fab = torch.exp(beta * self.eABij) - 1
+        Fab = np.exp(beta * self.eABij) - 1
         rc, rc2, rc3 = self.rcij, self.rcij2, self.rcij3
         rd, rd2, rd3 = self.rdij, self.rdij2, self.rdij3
         dia2 = dia**2
 
-        Kab = torch.log((rc + 2*rd)/dia)
+        Kab = np.log((rc + 2*rd)/dia)
         Kab *= 6*rc3 + 18 * rc2*rd - 24 * rd3
         aux1 = (rc + 2 * rd - dia)
         aux2 = (22*rd2 - 5*rc*rd - 7*rd*dia - 8*rc2 + rc*dia + dia2)
@@ -1105,6 +1103,7 @@ class saftvrmie_pure():
         '''
         # torch polyval
         # REVISE
+        raise
         dim = self.cii.shape[0]
 
         return torch.sum(T ** torch.arange())

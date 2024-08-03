@@ -10,7 +10,6 @@ me = 9.10938291e-31  # 1/Kg
 def aideal(rho, beta):
     broglie_vol = h / torch.sqrt(2*torch.pi * me / beta)
     a = torch.log(rho * broglie_vol**3) - 1
-    print(a)
     return a
 
 

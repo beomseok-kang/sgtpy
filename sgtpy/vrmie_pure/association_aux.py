@@ -5,7 +5,7 @@ import torch
 # TO CHANGE
 def association_config(eos):
 
-    types = torch.tensor(['B', 'P', 'N'])
+    types = np.array(['B', 'P', 'N'])
     nozero = np.nonzero(eos.sites)
     types = types[nozero]
     ntypes = np.asarray(eos.sites)[nozero]
